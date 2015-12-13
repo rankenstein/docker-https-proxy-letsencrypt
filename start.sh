@@ -1,10 +1,5 @@
 #!/bin/bash
 
-vhosts_root=/usr/local/apache2/htdocs_vhosts
-
-rm -rf "$vhosts_root"
-mkdir "$vhosts_root"
-
 (
 	case "$SSL_COMPATIBILITY" in
 		"intermediate")
@@ -66,8 +61,6 @@ mkdir "$vhosts_root"
 		varname_preserve_host="PRESERVE_HOST_$id"
 		preserve_host="${!varname_preserve_host}"
 		
-		docroot="$vhosts_root/$hostname"
-		
 		ifs_bkp="$IFS"
 		IFS="|"
 		proxy_arr=($proxy)
@@ -82,19 +75,12 @@ mkdir "$vhosts_root"
 			if [ ! -z "$alias" ]; then
 				echo "    ServerAlias $alias"
 			fi
-			echo
-			echo "    DocumentRoot $docroot"
-			echo "    <Directory $docroot>"
-			echo "        Options +Indexes"
-			echo "        Require all granted"
-			echo "    </Directory>"
+			
 			echo
 			
 			for((i=0; i<${#proxy_arr[@]}; i+=2)); do
 				path="${proxy_arr[i]}"
 				url="${proxy_arr[i+1]}"
-				
-				mkdir -p "$docroot/$path"
 				
 				if [ ! -z "$redirect" ]; then
 					echo "    RewriteEngine on"
