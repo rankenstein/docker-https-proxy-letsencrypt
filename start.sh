@@ -1,7 +1,9 @@
 #!/bin/bash
 
-rm -rf /usr/local/apache2/htdocs/vhosts
-mkdir /usr/local/apache2/htdocs/vhosts
+vhosts_root=/usr/local/apache2/htdocs_vhosts
+
+rm -rf "$vhosts_root"
+mkdir "$vhosts_root"
 
 (
 	case "$SSL_COMPATIBILITY" in
@@ -19,10 +21,25 @@ mkdir /usr/local/apache2/htdocs/vhosts
 			;;
 	esac
 
-	default_chain=$SSL_CHAIN
+	if [ ! -z "$SSL_CHAIN" ]; then
+		echo "SSLCertificateChainFile /ssl/$SSL_CHAIN.pem"
+	fi
 	
-	if [ ! -z "$default_chain" ]; then
-		echo "SSLCertificateChainFile /ssl/$default_chain.pem"
+	if [[ "$PRESERVE_HOST" = +(1|yes|true|on) ]]; then
+		echo "ProxyPreserveHost On"
+	fi
+	
+	if [ ! -z "$SSL_FALLBACK_KEY" ]; then
+		echo "<VirtualHost *:443>"
+		echo "    SSLEngine on"
+		echo "    SSLCertificateFile /ssl/$SSL_FALLBACK_KEY.crt"
+		echo "    SSLCertificateKeyFile /ssl/$SSL_FALLBACK_KEY.key"
+		
+		if [ ! -z "$SSL_FALLBACK_CHAIN" ]; then
+			echo "    SSLCertificateChainFile /ssl/$SSL_FALLBACK_CHAIN.pem"
+		fi
+		
+		echo "</VirtualHost>"
 	fi
 
 	for i in ${!HOST_*}; do
@@ -30,14 +47,26 @@ mkdir /usr/local/apache2/htdocs/vhosts
 		hostname="$(echo "$id" | sed -e s/_/./g)"
 		
 		proxy="${!i}"
-		if ! echo "$proxy" | grep -q "="; then
+		if ! echo "$proxy" | grep -q "|"; then
 			proxy="/|$proxy"
 		fi
 		
-		varname_chain="SSL_CHAIN_$i"
-		chain="${!varname_chain:-startssl}"
+		varname_chain="SSL_CHAIN_$id"
+		chain="${!varname_chain}"
 		
-		docroot="/usr/local/apache2/htdocs/vhosts/$hostname"
+		varname_nonssl="ALLOW_NONSSL_$id"
+		nonssl="${!varname_nonssl}"
+		
+		varname_redirect="REDIRECT_$id"
+		redirect="${!varname_redirect}"
+		
+		varname_alias="ALIAS_$id"
+		alias="${!varname_alias}"
+		
+		varname_preserve_host="PRESERVE_HOST_$id"
+		preserve_host="${!varname_preserve_host}"
+		
+		docroot="$vhosts_root/$hostname"
 		
 		ifs_bkp="$IFS"
 		IFS="|"
@@ -47,7 +76,42 @@ mkdir /usr/local/apache2/htdocs/vhosts
 		echo
 		echo
 		echo "<VirtualHost *:443>"
-		echo "    ServerName $hostname"
+		
+		common_conf="$(
+			echo "    ServerName $hostname"
+			if [ ! -z "$alias" ]; then
+				echo "    ServerAlias $alias"
+			fi
+			echo
+			echo "    DocumentRoot $docroot"
+			echo "    <Directory $docroot>"
+			echo "        Options +Indexes"
+			echo "        Require all granted"
+			echo "    </Directory>"
+			echo
+			
+			for((i=0; i<${#proxy_arr[@]}; i+=2)); do
+				path="${proxy_arr[i]}"
+				url="${proxy_arr[i+1]}"
+				
+				mkdir -p "$docroot/$path"
+				
+				if [ ! -z "$redirect" ]; then
+					echo "    RewriteEngine on"
+					echo "    RewriteRule ^$(echo "$path" | sed -re 's@/+$@@')/(.*)$ $(echo "$url" | sed -re 's@/+$@@')/\$1 [R=$redirect]"
+				else
+					echo "    ProxyPass \"$path\" \"$url\""
+					echo "    ProxyPassReverse \"$path\" \"$url\""
+					if [[ "$preserve_host" = +(1|yes|true|on) ]]; then
+						echo "ProxyPreserveHost On"
+					elif [[ "$preserve_host" = +(0|no|false|off) ]]; then
+						echo "ProxyPreserveHost Off"
+					fi
+				fi
+			done
+		)"
+		echo "$common_conf"
+		
 		echo
 		echo "    SSLEngine on"
 		echo "    SSLCertificateFile /ssl/$hostname.crt"
@@ -57,23 +121,14 @@ mkdir /usr/local/apache2/htdocs/vhosts
 			echo "    SSLCertificateChainFile /ssl/$chain.pem"
 		fi
 		
-		echo
-		echo "    DocumentRoot $docroot"
-		echo "    <Directory $docroot>"
-		echo "        Options +Indexes"
-		echo "    </Directory>"
-		echo
-		
-		for((i=0; i<${#proxy_arr[@]}; i+=2)); do
-			path="${proxy_arr[i]}"
-			url="${proxy_arr[i+1]}"
-			
-			mkdir -p "$docroot/$path"
-			echo "    ProxyPass \"$path\" \"$url\""
-			echo "    ProxyPassReverse \"$path\" \"$url\""
-		done
-		
 		echo "</VirtualHost>"
+		
+		if [[ "$nonssl" = +(1|yes|true|on) ]]; then
+			echo
+			echo "<VirtualHost *:80>"
+			echo "$common_conf"
+			echo "</VirtualHost>"
+		fi
 	done
 ) > /usr/local/apache2/conf/extra/vhosts.conf
 
