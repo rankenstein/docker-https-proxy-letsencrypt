@@ -1,5 +1,27 @@
 #!/bin/bash
 
+replace_hostname() {
+	url=$1
+	hostname=$2
+
+	# Take $url and replace the hostname with $hostname. Leave the port if it exists, remove user and password if it exists
+	echo "$url" | sed -re "s%(://([^/]+@)?)([[][^]]+[]]|[^:/]+)%://$hostname%"
+}
+
+extract_hostname() {
+	url=$1
+
+	# Exract the hostname from $url. If it is an IPv6 address in square brackets, remove the brackets.
+	echo "$url" | sed -re "s%^([^:]+://([^/]+@)?)([[][^]]+[]]|[^:/]+).*$%\\3%" | sed -re "s%^[[](.*)[]]$%\\1%"
+}
+
+extract_path() {
+	url=$1
+
+	# Exract the path from $url.
+	echo "$url" | sed -re "s%^[^:]+://([^/]+)([^?#]*).*$%\\2%"
+}
+
 (
 	case "$SSL_COMPATIBILITY" in
 		"intermediate")
@@ -87,11 +109,27 @@
 					echo "    RewriteRule ^$(echo "$path" | sed -re 's@/+$@@')/(.*)$ $(echo "$url" | sed -re 's@/+$@@')/\$1 [R=$redirect]"
 				else
 					echo "    ProxyPass \"$path\" \"$url\""
-					echo "    ProxyPassReverse \"$path\" \"$url\""
+
 					if [[ "$preserve_host" = +(1|yes|true|on) ]]; then
 						echo "    ProxyPreserveHost On"
 					elif [[ "$preserve_host" = +(0|no|false|off) ]]; then
 						echo "    ProxyPreserveHost Off"
+					fi
+
+					if [[ "$preserve_host" = +(1|yes|true|on) || "$PRESERVE_HOST" = +(1|yes|true|on) ]]; then
+						echo "    ProxyPassReverse \"$path\" \"$(replace_hostname "$url" "$hostname")\""
+					else
+						echo "    ProxyPassReverse \"$path\" \"$url\""
+
+						url_hostname="$(extract_hostname "$url")"
+						if [[ "$url_hostname" != "$hostname" ]]; then
+							echo "    ProxyPassReverseCookieDomain \"$url_hostname\" \"$hostname\""
+						fi
+					fi
+
+					url_path="$(extract_path "$url")"
+					if [[ "$url_path" != "$path" ]]; then
+						echo "    ProxyPassReverseCookiePath \"$url_path\" \"$path\""
 					fi
 				fi
 			done
