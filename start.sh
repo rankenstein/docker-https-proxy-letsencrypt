@@ -1,26 +1,53 @@
 #!/bin/bash
 
 replace_hostname() {
-	url=$1
-	hostname=$2
+	url="$1"
+	hostname="$2"
 
 	# Take $url and replace the hostname with $hostname. Leave the port if it exists, remove user and password if it exists
 	echo "$url" | sed -re "s%(://([^/]+@)?)([[][^]]+[]]|[^:/]+)%://$hostname%"
 }
 
 extract_hostname() {
-	url=$1
+	url="$1"
 
 	# Exract the hostname from $url. If it is an IPv6 address in square brackets, remove the brackets.
 	echo "$url" | sed -re "s%^([^:]+://([^/]+@)?)([[][^]]+[]]|[^:/]+).*$%\\3%" | sed -re "s%^[[](.*)[]]$%\\1%"
 }
 
 extract_path() {
-	url=$1
+	url="$1"
 
 	# Exract the path from $url.
 	path="$(echo "$url" | sed -re "s%^[^:]+://([^/]+)([^?#]*).*$%\\2%")"
 	echo "${path:-/}"
+}
+
+replace_protocol() {
+	url="$1"
+	protocol="$2"
+
+	# Replace protocol in $url with $protocol
+	echo "$url" | sed -re "s%^[^:]+://%$protocol://%"
+}
+
+switch_https() {
+	url="$1"
+
+	# If protocol is https, make http. If protocol is http, make https.
+	proto="$(echo "$url" | cut -d: -f1)"
+
+	case "$proto" in
+		http)
+			replace_protocol "$url" https
+			;;
+		https)
+			replace_protocol "$url" http
+			;;
+		*)
+			echo "$url"
+			;;
+	esac
 }
 
 (
@@ -118,9 +145,12 @@ extract_path() {
 					fi
 
 					if [[ "$preserve_host" = +(1|yes|true|on) || "$PRESERVE_HOST" = +(1|yes|true|on) ]]; then
-						echo "    ProxyPassReverse \"$path\" \"$(replace_hostname "$url" "$hostname")\""
+						replaced_url="$(replace_hostname "$url" "$hostname")"
+						echo "    ProxyPassReverse \"$path\" \"$replaced_url\""
+						echo "    ProxyPassReverse \"$path\" \"$(switch_https "$replaced_url")\""
 					else
 						echo "    ProxyPassReverse \"$path\" \"$url\""
+						echo "    ProxyPassReverse \"$path\" \"$(switch_https "$url")\""
 
 						url_hostname="$(extract_hostname "$url")"
 						if [[ "$url_hostname" != "$hostname" ]]; then
