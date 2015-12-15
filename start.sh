@@ -89,17 +89,17 @@
 					echo "    ProxyPass \"$path\" \"$url\""
 					echo "    ProxyPassReverse \"$path\" \"$url\""
 					if [[ "$preserve_host" = +(1|yes|true|on) ]]; then
-						echo "ProxyPreserveHost On"
+						echo "    ProxyPreserveHost On"
 					elif [[ "$preserve_host" = +(0|no|false|off) ]]; then
-						echo "ProxyPreserveHost Off"
+						echo "    ProxyPreserveHost Off"
 					fi
 				fi
 			done
 		)"
 		echo "$common_conf"
 		if [ -z "$redirect" ]; then
-			echo "RequestHeader add X-Forwarded-Ssl on"
-			echo "RequestHeader set X_FORWARDED_PROTO 'https'"
+			echo "    RequestHeader add X-Forwarded-Ssl on"
+			echo "    RequestHeader set X_FORWARDED_PROTO 'https'"
 		fi
 		
 		echo
