@@ -78,9 +78,9 @@
 			
 			echo
 			
-			for((i=0; i<${#proxy_arr[@]}; i+=2)); do
-				path="${proxy_arr[i]}"
-				url="${proxy_arr[i+1]}"
+			for((i=${#proxy_arr[@]}-1; i>=0; i-=2)); do
+				path="${proxy_arr[i-1]}"
+				url="${proxy_arr[i]}"
 				
 				if [ ! -z "$redirect" ]; then
 					echo "    RewriteEngine on"
