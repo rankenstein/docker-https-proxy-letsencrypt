@@ -19,7 +19,8 @@ extract_path() {
 	url=$1
 
 	# Exract the path from $url.
-	echo "$url" | sed -re "s%^[^:]+://([^/]+)([^?#]*).*$%\\2%"
+	path="$(echo "$url" | sed -re "s%^[^:]+://([^/]+)([^?#]*).*$%\\2%")"
+	echo "${path:-/}"
 }
 
 (
