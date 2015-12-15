@@ -97,6 +97,10 @@
 			done
 		)"
 		echo "$common_conf"
+		if [ -z "$redirect" ]; then
+			echo "RequestHeader add X-Forwarded-Ssl on"
+			echo "RequestHeader set X_FORWARDED_PROTO 'https'"
+		fi
 		
 		echo
 		echo "    SSLEngine on"
