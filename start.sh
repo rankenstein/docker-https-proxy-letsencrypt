@@ -128,40 +128,43 @@ switch_https() {
 			
 			echo
 			
-			for((i=${#proxy_arr[@]}-1; i>=0; i-=2)); do
-				path="${proxy_arr[i-1]}"
-				url="${proxy_arr[i]}"
+			for((i=0; i<${#proxy_arr[@]}; i+=2)); do
+				path="${proxy_arr[i]}"
+				url="${proxy_arr[i+1]}"
 				
 				if [ ! -z "$redirect" ]; then
 					echo "    RewriteEngine on"
 					echo "    RewriteRule ^$(echo "$path" | sed -re 's@/+$@@')/(.*)$ $(echo "$url" | sed -re 's@/+$@@')/\$1 [R=$redirect]"
 				else
-					echo "    ProxyPass \"$path\" \"$url\""
-
 					if [[ "$preserve_host" = +(1|yes|true|on) ]]; then
 						echo "    ProxyPreserveHost On"
 					elif [[ "$preserve_host" = +(0|no|false|off) ]]; then
 						echo "    ProxyPreserveHost Off"
 					fi
 
+					echo "    <Location \"$path\">"
+					echo "        ProxyPass \"$url\""
+
 					if [[ "$preserve_host" = +(1|yes|true|on) || "$PRESERVE_HOST" = +(1|yes|true|on) ]]; then
 						replaced_url="$(replace_hostname "$url" "$hostname")"
-						echo "    ProxyPassReverse \"$path\" \"$replaced_url\""
-						echo "    ProxyPassReverse \"$path\" \"$(switch_https "$replaced_url")\""
+						echo "        ProxyPassReverse \"$replaced_url\""
+						echo "        ProxyPassReverse \"$(switch_https "$replaced_url")\""
 					else
-						echo "    ProxyPassReverse \"$path\" \"$url\""
-						echo "    ProxyPassReverse \"$path\" \"$(switch_https "$url")\""
+						echo "        ProxyPassReverse \"$url\""
+						echo "        ProxyPassReverse \"$(switch_https "$url")\""
 
 						url_hostname="$(extract_hostname "$url")"
 						if [[ "$url_hostname" != "$hostname" ]]; then
-							echo "    ProxyPassReverseCookieDomain \"$url_hostname\" \"$hostname\""
+							echo "        ProxyPassReverseCookieDomain \"$url_hostname\" \"$hostname\""
 						fi
 					fi
 
 					url_path="$(extract_path "$url")"
 					if [[ "$url_path" != "$path" ]]; then
-						echo "    ProxyPassReverseCookiePath \"$url_path\" \"$path\""
+						echo "        ProxyPassReverseCookiePath \"$url_path\" \"$path\""
 					fi
+
+					echo "    </Location>"
 				fi
 			done
 		)"
