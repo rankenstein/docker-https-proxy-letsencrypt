@@ -19,8 +19,7 @@ extract_path() {
 	url="$1"
 
 	# Exract the path from $url.
-	path="$(echo "$url" | sed -re "s%^[^:]+://([^/]+)([^?#]*).*$%\\2%")"
-	echo "${path:-/}"
+	echo "$url" | sed -re "s%^[^:]+://([^/]+)([^?#]*).*$%\\2%"
 }
 
 replace_protocol() {
@@ -29,6 +28,12 @@ replace_protocol() {
 
 	# Replace protocol in $url with $protocol
 	echo "$url" | sed -re "s%^[^:]+://%$protocol://%"
+}
+
+remove_trailing_slash() {
+	url="$1"
+	
+	echo "$url" | sed -re "s@/+\$@@"
 }
 
 switch_https() {
@@ -126,15 +131,16 @@ switch_https() {
 				echo "    ServerAlias $alias"
 			fi
 			
-			echo
-			
 			for((i=0; i<${#proxy_arr[@]}; i+=2)); do
-				path="${proxy_arr[i]}"
-				url="${proxy_arr[i+1]}"
-				
+				path="$(remove_trailing_slash "${proxy_arr[i]}")"
+				url="$(remove_trailing_slash "${proxy_arr[i+1]}")"
+			
+				echo
+	
+				echo "    RewriteEngine on"
+
 				if [ ! -z "$redirect" ]; then
-					echo "    RewriteEngine on"
-					echo "    RewriteRule ^$(echo "$path" | sed -re 's@/+$@@')/(.*)$ $(echo "$url" | sed -re 's@/+$@@')/\$1 [R=$redirect]"
+					echo "    RewriteRule ^$path(/.*)?$ $url\$1 [R=$redirect]"
 				else
 					if [[ "$preserve_host" = +(1|yes|true|on) ]]; then
 						echo "    ProxyPreserveHost On"
@@ -142,16 +148,18 @@ switch_https() {
 						echo "    ProxyPreserveHost Off"
 					fi
 
-					echo "    <Location \"$path\">"
-					echo "        ProxyPass \"$url\""
+					echo "    RewriteRule ^$path$ $0/ [R=permanent]"
+
+					echo "    <Location \"$path/\">"
+					echo "        ProxyPass \"$url/\""
 
 					if [[ "$preserve_host" = +(1|yes|true|on) || "$PRESERVE_HOST" = +(1|yes|true|on) ]]; then
 						replaced_url="$(replace_hostname "$url" "$hostname")"
-						echo "        ProxyPassReverse \"$replaced_url\""
-						echo "        ProxyPassReverse \"$(switch_https "$replaced_url")\""
+						echo "        ProxyPassReverse \"$replaced_url/\""
+						echo "        ProxyPassReverse \"$(switch_https "$replaced_url")/\""
 					else
-						echo "        ProxyPassReverse \"$url\""
-						echo "        ProxyPassReverse \"$(switch_https "$url")\""
+						echo "        ProxyPassReverse \"$url/\""
+						echo "        ProxyPassReverse \"$(switch_https "$url")/\""
 
 						url_hostname="$(extract_hostname "$url")"
 						if [[ "$url_hostname" != "$hostname" ]]; then
@@ -161,7 +169,8 @@ switch_https() {
 
 					url_path="$(extract_path "$url")"
 					if [[ "$url_path" != "$path" ]]; then
-						echo "        ProxyPassReverseCookiePath \"$url_path\" \"$path\""
+						echo "        ProxyPassReverseCookiePath \"$url_path/\" \"$path/\""
+						echo "        ProxyPassReverse \"$url_path/\"" # For broken redirects
 					fi
 
 					echo "    </Location>"
