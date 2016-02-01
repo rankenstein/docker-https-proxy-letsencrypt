@@ -55,6 +55,24 @@ switch_https() {
 	esac
 }
 
+get_ws_url() {
+	url="$1"
+
+	proto="$(echo "$url" | cut -d: -f1)"
+
+	case "$proto" in
+		http)
+			replace_protocol "$url" ws
+			;;
+		https)
+			replace_protocol "$url" wss
+			;;
+		*)
+			echo "$url"
+			;;
+	esac
+}
+
 (
 	case "$SSL_COMPATIBILITY" in
 		"intermediate")
@@ -142,16 +160,23 @@ switch_https() {
 				if [ ! -z "$redirect" ]; then
 					echo "    RewriteRule ^$path(/.*)?$ $url\$1 [R=$redirect]"
 				else
+					echo "    RewriteRule ^$path$ $0/ [R=permanent]"
+
+					echo "    RewriteCond %{HTTP:Upgrade} =websocket"
+					echo "    RewriteRule ^$path(/.*)?$ $(get_ws_url "$url")\$1 [P]"
+					echo "    RewriteCond %{HTTP:Upgrade} !=websocket"
+					echo "    RewriteRule ^$path(/.*)?$ $url\$1 [P]"
+
+					echo
+
 					if [[ "$preserve_host" = +(1|yes|true|on) ]]; then
 						echo "    ProxyPreserveHost On"
 					elif [[ "$preserve_host" = +(0|no|false|off) ]]; then
 						echo "    ProxyPreserveHost Off"
 					fi
 
-					echo "    RewriteRule ^$path$ $0/ [R=permanent]"
-
+					echo
 					echo "    <Location \"$path/\">"
-					echo "        ProxyPass \"$url/\""
 
 					if [[ "$preserve_host" = +(1|yes|true|on) || "$PRESERVE_HOST" = +(1|yes|true|on) ]]; then
 						replaced_url="$(replace_hostname "$url" "$hostname")"
