@@ -160,7 +160,7 @@ get_ws_url() {
 				if [ ! -z "$redirect" ]; then
 					echo "    RewriteRule ^$path(/.*)?$ $url\$1 [R=$redirect]"
 				else
-					echo "    RewriteRule ^$path$ $0/ [R=permanent]"
+					echo "    RewriteRule ^$path$ \$0/ [R=permanent]"
 
 					echo "    RewriteCond %{HTTP:Upgrade} =websocket"
 					echo "    RewriteRule ^$path(/.*)?$ $(get_ws_url "$url")\$1 [P]"
