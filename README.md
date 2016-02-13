@@ -30,6 +30,7 @@ Environment
 * `ALIAS_<hostname_with_underscore>`: A space-separated list of alias hostnames. Possible to use wildcards.
 * `PRESERVE_HOST` and `PRESERVE_HOST_<hostname_with_underscore>`: Set to `yes` to send original host name via proxy.
 * `ACME_EMAIL`: E-mail address to use for let’s encrypt. Optional, but you will 
+* `NO_SSL`: Disable SSL altogether
 
 Volumes
 =======

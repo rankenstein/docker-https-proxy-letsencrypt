@@ -2,9 +2,15 @@
 
 chown acme:acme /usr/local/apache2/ssl
 
-/usr/local/bin/mkconfig.sh > /usr/local/apache2/conf/extra/vhosts.conf
+NO_SSL=1 /usr/local/bin/mkconfig.sh > /usr/local/apache2/conf/extra/vhosts.conf
 
-su acme -c /usr/local/bin/renew-ssl.sh
+if [[ "$NO_SSL" != +(1|yes|true|on) ]]; then
+	(
+		su acme -c /usr/local/bin/renew-ssl.sh
+		/usr/local/bin/mkconfig.sh > /usr/local/apache2/conf/extra/vhosts.conf
+		pkill -HUP httpd
+	) &
+fi
 
 (
 	while true; do
