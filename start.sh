@@ -151,14 +151,15 @@ get_ws_url() {
 
 			echo
 			echo "    Alias /.well-known/acme-challenge /usr/local/apache2/acme/$hostname"
+
+			echo
+			echo "    RewriteEngine on"
 			
 			for((i=0; i<${#proxy_arr[@]}; i+=2)); do
 				path="$(remove_trailing_slash "${proxy_arr[i]}")"
 				url="$(remove_trailing_slash "${proxy_arr[i+1]}")"
 			
 				echo
-	
-				echo "    RewriteEngine on"
 
 				if [ ! -z "$redirect" ]; then
 					echo "    RewriteRule ^$path(/.*)?$ $url\$1 [R=$redirect]"
@@ -171,11 +172,11 @@ get_ws_url() {
 					echo "    RewriteCond %{REQUEST_URI} !^/.well-known/acme-challenge/?"
 					echo "    RewriteRule ^$path(/.*)?$ $url\$1 [P]"
 
-					echo
-
 					if [[ "$preserve_host" = +(1|yes|true|on) ]]; then
+						echo
 						echo "    ProxyPreserveHost On"
 					elif [[ "$preserve_host" = +(0|no|false|off) ]]; then
+						echo
 						echo "    ProxyPreserveHost Off"
 					fi
 
@@ -208,6 +209,7 @@ get_ws_url() {
 		)"
 		echo "$common_conf"
 		if [ -z "$redirect" ]; then
+			echo
 			echo "    RequestHeader add X-Forwarded-Ssl on"
 			echo "    RequestHeader set X_FORWARDED_PROTO 'https'"
 		fi
