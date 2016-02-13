@@ -10,7 +10,7 @@ RUN curl -L https://github.com/kuba/simp_le/archive/master.tar.gz | tar -xz -C /
 	ln -s /usr/local/share/simp_le/venv/bin/simp_le /usr/local/bin/
 
 COPY custom.conf /usr/local/apache2/conf/extra/custom.conf
-COPY start.sh /usr/local/bin/start.sh
+COPY start.sh mkconfig.sh /usr/local/bin/
 
 RUN echo "Include conf/extra/custom.conf" >> /usr/local/apache2/conf/httpd.conf && \
 	sed -ri /usr/local/apache2/conf/httpd.conf -e 's@^(\s*)(CustomLog\s)@\1#\2@g' && \
