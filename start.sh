@@ -148,6 +148,9 @@ get_ws_url() {
 			if [ ! -z "$alias" ]; then
 				echo "    ServerAlias $alias"
 			fi
+
+			echo
+			echo "    Alias /.well-known/acme-challenge /usr/local/apache2/acme/$hostname"
 			
 			for((i=0; i<${#proxy_arr[@]}; i+=2)); do
 				path="$(remove_trailing_slash "${proxy_arr[i]}")"
@@ -165,6 +168,7 @@ get_ws_url() {
 					echo "    RewriteCond %{HTTP:Upgrade} =websocket"
 					echo "    RewriteRule ^$path(/.*)?$ $(get_ws_url "$url")\$1 [P]"
 					echo "    RewriteCond %{HTTP:Upgrade} !=websocket"
+					echo "    RewriteCond %{REQUEST_URI} !^/.well-known/acme-challenge/?"
 					echo "    RewriteRule ^$path(/.*)?$ $url\$1 [P]"
 
 					echo
