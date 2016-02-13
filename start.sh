@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir -p /ssl/letsencrypt && chown acme:acme /ssl/letsencrypt
+chown acme:acme /usr/local/apache2/ssl
 
 /usr/local/bin/mkconfig.sh > /usr/local/apache2/conf/extra/vhosts.conf
 

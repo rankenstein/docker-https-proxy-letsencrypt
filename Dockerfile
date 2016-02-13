@@ -14,10 +14,12 @@ COPY start.sh mkconfig.sh renew-ssl.sh /usr/local/bin/
 
 RUN echo "Include conf/extra/custom.conf" >> /usr/local/apache2/conf/httpd.conf && \
 	sed -ri /usr/local/apache2/conf/httpd.conf -e 's@^(\s*)(CustomLog\s)@\1#\2@g' && \
-	mkdir -p /ssl /usr/local/apache2/htdocs/.well-known/acme-challenge && \
+	mkdir -p /usr/local/apache2/ssl /usr/local/apache2/htdocs/.well-known/acme-challenge && \
 	useradd -s /bin/bash acme && \
 	chown acme:acme /usr/local/apache2/htdocs/.well-known/acme-challenge
 
 CMD "/usr/local/bin/start.sh"
+
+VOLUME ["/usr/local/apache2/ssl"]
 
 EXPOSE 443

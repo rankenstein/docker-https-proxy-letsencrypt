@@ -6,7 +6,7 @@ containsElement () {
 	return 1
 }
 
-cd /ssl/letsencrypt
+cd /usr/local/apache2/ssl
 
 hosts=()
 for i in ${!HOST_*}; do
