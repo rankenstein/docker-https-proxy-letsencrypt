@@ -1,7 +1,7 @@
 FROM httpd:latest
 MAINTAINER Candid Dauth <cdauth@cdauth.eu> 
 
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y vim curl
 
 RUN curl -L https://github.com/kuba/simp_le/archive/master.tar.gz | tar -xz -C /usr/local/share --transform 's@^simp_le-master@simp_le@' && \
 	cd /usr/local/share/simp_le && \
