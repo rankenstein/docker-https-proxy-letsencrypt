@@ -155,7 +155,7 @@ get_ws_url() {
 			echo
 			echo "    RewriteEngine on"
 			
-			for((i=0; i<${#proxy_arr[@]}; i+=2)); do
+			for((i=$[${#proxy_arr[@]}-2]; $i>=0; i-=2)); do
 				path="$(remove_trailing_slash "${proxy_arr[i]}")"
 				url="$(remove_trailing_slash "${proxy_arr[i+1]}")"
 			
