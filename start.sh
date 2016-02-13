@@ -10,6 +10,7 @@ su acme -c /usr/local/bin/renew-ssl.sh
 	while true; do
 		sleep 86400
 		su acme -c /usr/local/bin/renew-ssl.sh
+		pkill -HUP httpd
 	done
 ) &
 
