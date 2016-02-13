@@ -88,25 +88,8 @@ case "$SSL_COMPATIBILITY" in
 		;;
 esac
 
-if [ ! -z "$SSL_CHAIN" ]; then
-	echo "SSLCertificateChainFile /ssl/$SSL_CHAIN.pem"
-fi
-
 if [[ "$PRESERVE_HOST" = +(1|yes|true|on) ]]; then
 	echo "ProxyPreserveHost On"
-fi
-
-if [ ! -z "$SSL_FALLBACK_KEY" ]; then
-	echo "<VirtualHost *:443>"
-	echo "    SSLEngine on"
-	echo "    SSLCertificateFile /ssl/$SSL_FALLBACK_KEY.crt"
-	echo "    SSLCertificateKeyFile /ssl/$SSL_FALLBACK_KEY.key"
-	
-	if [ ! -z "$SSL_FALLBACK_CHAIN" ]; then
-		echo "    SSLCertificateChainFile /ssl/$SSL_FALLBACK_CHAIN.pem"
-	fi
-	
-	echo "</VirtualHost>"
 fi
 
 for i in ${!HOST_*}; do
@@ -117,9 +100,6 @@ for i in ${!HOST_*}; do
 	if ! echo "$proxy" | grep -q "|"; then
 		proxy="/|$proxy"
 	fi
-	
-	varname_chain="SSL_CHAIN_$id"
-	chain="${!varname_chain}"
 	
 	varname_nonssl="ALLOW_NONSSL_$id"
 	nonssl="${!varname_nonssl}"
@@ -209,15 +189,9 @@ for i in ${!HOST_*}; do
 		echo "    RequestHeader add X-Forwarded-Ssl on"
 		echo "    RequestHeader set X_FORWARDED_PROTO 'https'"
 	fi
-	
+
 	echo
 	echo "    SSLEngine on"
-	echo "    SSLCertificateFile /ssl/$hostname.crt"
-	echo "    SSLCertificateKeyFile /ssl/$hostname.key"
-	
-	if [ ! -z "$chain" ]; then
-		echo "    SSLCertificateChainFile /ssl/$chain.pem"
-	fi
 	
 	echo "</VirtualHost>"
 	
