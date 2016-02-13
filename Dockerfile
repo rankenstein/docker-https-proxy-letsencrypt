@@ -13,9 +13,9 @@ COPY start.sh /usr/local/bin/start.sh
 
 RUN echo "Include conf/extra/custom.conf" >> /usr/local/apache2/conf/httpd.conf && \
 	sed -ri /usr/local/apache2/conf/httpd.conf -e 's@^(\s*)(CustomLog\s)@\1#\2@g' && \
-	mkdir /ssl /usr/local/apache2/acme && \
+	mkdir -p /ssl /usr/local/apache2/htdocs/.well-known/acme-challenge && \
 	useradd -m acme && \
-	chown acme:acme /usr/local/apache2/acme
+	chown acme:acme /usr/local/apache2/htdocs/.well-known/acme-challenge
 
 CMD "/usr/local/bin/start.sh"
 

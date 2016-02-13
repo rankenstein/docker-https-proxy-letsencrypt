@@ -150,9 +150,6 @@ get_ws_url() {
 			fi
 
 			echo
-			echo "    Alias /.well-known/acme-challenge /usr/local/apache2/acme/$hostname"
-
-			echo
 			echo "    RewriteEngine on"
 			
 			for((i=$[${#proxy_arr[@]}-2]; $i>=0; i-=2)); do
