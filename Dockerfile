@@ -22,4 +22,4 @@ CMD "/usr/local/bin/start.sh"
 
 VOLUME ["/usr/local/apache2/ssl"]
 
-EXPOSE 443
+EXPOSE 80 443
