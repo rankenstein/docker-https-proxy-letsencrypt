@@ -227,7 +227,8 @@ for i in ${!HOST_*}; do
 		if [ -z "$redirect" ]; then
 			echo
 			echo "    RequestHeader add X-Forwarded-Ssl on"
-			echo "    RequestHeader set X_FORWARDED_PROTO 'https'"
+			echo "    RequestHeader set X-Forwarded-Proto 'https'"
+			echo "    RequestHeader set X-Forwarded-Port '443'"
 		fi
 		echo "</VirtualHost>"
 	fi
