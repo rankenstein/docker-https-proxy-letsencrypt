@@ -224,12 +224,19 @@ for i in ${!HOST_*}; do
 		echo "    SSLEngine on"
 		echo
 		echo "$common_conf"
+
 		if [ -z "$redirect" ]; then
 			echo
 			echo "    RequestHeader add X-Forwarded-Ssl on"
 			echo "    RequestHeader set X-Forwarded-Proto 'https'"
 			echo "    RequestHeader set X-Forwarded-Port '443'"
 		fi
+
+		if [[ "$nonssl" != +(1|yes|true|on) ]]; then
+			echo
+			echo "    Header always set Strict-Transport-Security \"max-age=1576800000\""
+		fi
+
 		echo "</VirtualHost>"
 	fi
 	
