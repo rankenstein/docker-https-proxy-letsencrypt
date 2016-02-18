@@ -151,7 +151,7 @@ for i in ${!HOST_*}; do
 	ifs_bkp="$IFS"
 	IFS="|"
 	proxy_arr=($proxy)
-	IFS=ifs_bkp
+	IFS="$ifs_bkp"
 	
 	common_conf="$(
 		echo "    ServerName $hostname"
