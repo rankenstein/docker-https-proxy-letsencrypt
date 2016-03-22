@@ -129,7 +129,7 @@ fi
 
 for i in ${!HOST_*}; do
 	id="${i#HOST_}"
-	hostname="$(echo "$id" | sed -e s/_/./g)"
+	hostname="$(echo "$id" | sed -e s/__/-/g | sed -e s/_/./g)"
 	
 	proxy="${!i}"
 	if ! echo "$proxy" | grep -q "|"; then
