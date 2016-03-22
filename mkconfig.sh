@@ -85,7 +85,7 @@ if [[ "$NO_SSL" != +(1|yes|true|on) ]]; then
 	echo
 	echo "    RewriteEngine on"
 	echo "    RewriteCond %{REQUEST_URI} !^/.well-known/acme-challenge/?"
-	echo "    RewriteRule ^/(.*)$ https://%{HTTP_HOST}/$1"
+	echo "    RewriteRule ^/(.*)$ https://%{HTTP_HOST}/\$1"
 	echo "</VirtualHost>"
 
 	echo
