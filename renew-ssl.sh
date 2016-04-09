@@ -6,23 +6,44 @@ containsElement () {
 	return 1
 }
 
+esc() {
+	ret=( )
+	for i in "$@"; do
+		ret+=( "$(printf '%q' "$i")" )
+	done
+	echo "${ret[@]}"
+}
+
 cd /usr/local/apache2/ssl
 
-hosts=()
-for i in ${!HOST_*}; do
-	hosts+=("$(echo "${i#HOST_}" | sed -e s/_/./g)")
-done
-
-args=(-f account_key.json -f cert.pem -f chain.pem -f key.pem --default_root /usr/local/apache2/htdocs)
-
-for i in "${hosts[@]}"; do
-	args+=(-d "$i")
-done
+simple=(simp_le -f account_key.json -f cert.pem -f chain.pem -f key.pem --default_root /usr/local/apache2/htdocs)
 
 if [ ! -z "$ACME_EMAIL" ]; then
-	args+=(--email "$ACME_EMAIL")
+	simple+=(--email "$ACME_EMAIL")
 fi
 
-echo "simp_le ${args[@]}"
+commands=""
+for i in ${!HOST_*}; do
+	id="${i#HOST_}"
+	host="$(echo "$id" | sed -e s/_/./g)"
 
-simp_le "${args[@]}"
+	[ ! -e "$host" ] && mkdir "$host"
+
+	if [ ! -e account_key.json ]; then
+		cd "$host" || continue
+
+		echo "${simple[@]}" -d "$host"
+		"${simple[@]}" -d "$host" || exit $?
+		mv account_key.json ..
+		ln -s ../account_key.json
+		cd ..
+	else
+		[ ! -e "$host/account_key.json" ] && ln -s ../account_key.json "$host/"
+
+		commands="$(echo "$commands"; echo "cd $(esc "$host") && echo "$(esc "${simple[@]}" -d "$host")" && $(esc "${simple[@]}" -d "$host")")"
+	fi
+done
+
+if [ ! -z "$commands" ]; then
+	echo "$commands" | parallel -j5
+fi

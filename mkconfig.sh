@@ -115,12 +115,6 @@ if [[ "$NO_SSL" != +(1|yes|true|on) ]]; then
 	echo "SSLStaplingCache \"shmcb:/var/run/ocsp(128000)\""
 	echo "SSLSessionCache \"shmcb:/usr/local/apache2/logs/ssl_scache(512000)\""
 	echo "SSLSessionCacheTimeout 300"
-
-	echo
-
-	echo "SSLCertificateFile /usr/local/apache2/ssl/cert.pem"
-	echo "SSLCertificateKeyFile /usr/local/apache2/ssl/key.pem"
-	echo "SSLCertificateChainFile /usr/local/apache2/ssl/chain.pem"
 fi
 
 if [[ "$PRESERVE_HOST" = +(1|yes|true|on) ]]; then
@@ -222,6 +216,9 @@ for i in ${!HOST_*}; do
 		echo
 		echo "<VirtualHost *:443>"
 		echo "    SSLEngine on"
+		echo "    SSLCertificateFile /usr/local/apache2/ssl/$hostname/cert.pem"
+		echo "    SSLCertificateKeyFile /usr/local/apache2/ssl/$hostname/key.pem"
+		echo "    SSLCertificateChainFile /usr/local/apache2/ssl/$hostname/chain.pem"
 		echo
 		echo "$common_conf"
 
