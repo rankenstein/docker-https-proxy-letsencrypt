@@ -25,7 +25,7 @@ fi
 commands=""
 for i in ${!HOST_*}; do
 	id="${i#HOST_}"
-	host="$(echo "$id" | sed -e s/_/./g)"
+	host="$(echo "$id" | sed -e s/__/-/g | sed -e s/_/./g)"
 
 	[ ! -e "$host" ] && mkdir "$host"
 
