@@ -76,7 +76,13 @@ get_ws_url() {
 if [[ "$NO_SSL" != +(1|yes|true|on) ]]; then
 	echo "LoadModule ssl_module modules/mod_ssl.so"
 	echo "Listen 443"
+
+	echo
+
 	echo "SSLProxyEngine on"
+	echo "SSLProxyCheckPeerCN off"
+	echo "SSLProxyCheckPeerExpire off"
+	echo "SSLProxyCheckPeerName off"
 	
 	echo
 	
