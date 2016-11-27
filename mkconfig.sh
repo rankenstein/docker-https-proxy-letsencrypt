@@ -113,7 +113,7 @@ if [[ "$NO_SSL" != +(1|yes|true|on) ]]; then
 			;;
 	esac
 	echo "SSLHonorCipherOrder on"
-	echo "SSLCompression off"
+	#echo "SSLCompression off" # Seems to be unavailable now
 	echo "SSLSessionTickets off"
 	echo "SSLUseStapling on"
 	echo "SSLStaplingResponderTimeout 5"

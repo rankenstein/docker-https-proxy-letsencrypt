@@ -1,10 +1,11 @@
-FROM alpine:latest
+# edge needed for apache2-http2
+FROM alpine:edge
 MAINTAINER Candid Dauth <cdauth@cdauth.eu> 
 
 RUN apk update && apk add \
 	curl tar \
 	gcc libffi-dev musl-dev openssl-dev py-virtualenv py-pip python-dev \
-	apache2 apache2-proxy apache2-ssl \
+	apache2 apache2-http2 apache2-proxy apache2-ssl \
 	bash parallel vim
 
 RUN curl -L https://github.com/kuba/simp_le/archive/master.tar.gz | tar -xz -C /usr/local/share --transform 's@^simp_le-master@simp_le@' && \
