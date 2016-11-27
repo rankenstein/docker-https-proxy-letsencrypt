@@ -20,4 +20,5 @@ fi
 	done
 ) &
 
+rm -f /run/apache2/httpd.pid
 httpd -D FOREGROUND

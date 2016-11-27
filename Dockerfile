@@ -22,7 +22,6 @@ RUN sed -ri /etc/apache2/httpd.conf \
 		-e 's@^(\s*)(LoadModule mpm_prefork_module modules/mod_mpm_prefork.so)@\1#\2@g' \
 		-e 's@^(\s*)(ErrorLog\s)@\1#\2@g' \
 	&& \
-	sed -ri /etc/apache2/conf.d/mpm.conf -e 's@^(\s*)(PidFile\s)@\1#\2@g' && \
 	bash -c 'rm -f /etc/apache2/conf.d/{ssl.conf,userdir.conf,info.conf,proxy.conf}' && \
 	mkdir -p /etc/apache2/ssl /etc/apache2/htdocs/.well-known/acme-challenge /run/apache2 && \
 	adduser -D -H -s /bin/bash acme && \
