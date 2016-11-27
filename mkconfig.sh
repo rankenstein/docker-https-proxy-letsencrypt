@@ -119,7 +119,7 @@ if [[ "$NO_SSL" != +(1|yes|true|on) ]]; then
 	echo "SSLStaplingResponderTimeout 5"
 	echo "SSLStaplingReturnResponderErrors off"
 	echo "SSLStaplingCache \"shmcb:/var/run/ocsp(128000)\""
-	echo "SSLSessionCache \"shmcb:/usr/local/apache2/logs/ssl_scache(512000)\""
+	echo "SSLSessionCache \"shmcb:/tmp/ssl_scache(512000)\""
 	echo "SSLSessionCacheTimeout 300"
 fi
 
@@ -222,9 +222,9 @@ for i in ${!HOST_*}; do
 		echo
 		echo "<VirtualHost *:443>"
 		echo "    SSLEngine on"
-		echo "    SSLCertificateFile /usr/local/apache2/ssl/$hostname/cert.pem"
-		echo "    SSLCertificateKeyFile /usr/local/apache2/ssl/$hostname/key.pem"
-		echo "    SSLCertificateChainFile /usr/local/apache2/ssl/$hostname/chain.pem"
+		echo "    SSLCertificateFile /etc/apache2/ssl/$hostname/cert.pem"
+		echo "    SSLCertificateKeyFile /etc/apache2/ssl/$hostname/key.pem"
+		echo "    SSLCertificateChainFile /etc/apache2/ssl/$hostname/chain.pem"
 		echo
 		echo "$common_conf"
 

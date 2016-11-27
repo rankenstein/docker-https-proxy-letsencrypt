@@ -14,9 +14,9 @@ esc() {
 	echo "${ret[@]}"
 }
 
-cd /usr/local/apache2/ssl
+cd /etc/apache2/ssl
 
-simple=(simp_le -f account_key.json -f cert.pem -f chain.pem -f key.pem --default_root /usr/local/apache2/htdocs)
+simple=(simp_le -f account_key.json -f cert.pem -f chain.pem -f key.pem --default_root /etc/apache2/htdocs)
 
 if [ ! -z "$ACME_EMAIL" ]; then
 	simple+=(--email "$ACME_EMAIL")
