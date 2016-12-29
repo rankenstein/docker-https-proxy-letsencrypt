@@ -175,10 +175,12 @@ for i in ${!HOST_*}; do
 				echo "    RewriteRule ^$path$ \$0/ [R=permanent]"
 
 				echo "    RewriteCond %{HTTP:Upgrade} =websocket"
-				echo "    RewriteRule ^$path(/.*)?$ $(get_ws_url "$url")\$1 [P]"
+				echo "    RewriteCond %{THE_REQUEST} \"^[a-zA-Z]+ $path/(.*) HTTP/\d+(\.\d+)?$\""
+				echo "    RewriteRule .? $(get_ws_url "$url")/%1 [P,NE]"
 				echo "    RewriteCond %{HTTP:Upgrade} !=websocket"
 				echo "    RewriteCond %{REQUEST_URI} !^/.well-known/acme-challenge/?"
-				echo "    RewriteRule ^$path(/.*)?$ $url\$1 [P]"
+				echo "    RewriteCond %{THE_REQUEST} \"^[a-zA-Z]+ $path/(.*) HTTP/\d+(\.\d+)?$\""
+				echo "    RewriteRule .? $url/%1 [P,NE]"
 
 				if [[ "$preserve_host" = +(1|yes|true|on) ]]; then
 					echo
