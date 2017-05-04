@@ -47,3 +47,11 @@ done
 if [ ! -z "$commands" ]; then
 	echo "$commands" | parallel -j5
 fi
+
+for i in ${!HOST_*}; do
+	id="${i#HOST_}"
+	host="$(echo "$id" | sed -e s/__/-/g | sed -e s/_/./g)"
+
+	[ ! -e "$host/privkey.pem" ] && ln -s key.pem "$host/privkey.pem"
+	(cat "$host/chain.pem"; echo; cat "$host/cert.pem") > "$host/fullchain.pem"
+done
