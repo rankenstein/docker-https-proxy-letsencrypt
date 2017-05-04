@@ -3,12 +3,12 @@ FROM alpine:edge
 MAINTAINER Candid Dauth <cdauth@cdauth.eu> 
 
 RUN apk update && apk add \
-	curl tar \
+	git \
 	gcc libffi-dev musl-dev openssl-dev py-virtualenv py-pip python-dev \
 	apache2 apache2-http2 apache2-proxy apache2-ssl \
 	bash parallel vim
 
-RUN curl -L https://github.com/zenhack/simp_le/archive/master.tar.gz | tar -xz -C /usr/local/share --transform 's@^simp_le-master@simp_le@' && \
+RUN git clone --depth 1 https://github.com/zenhack/simp_le.git /usr/local/share/simp_le && \
 	cd /usr/local/share/simp_le && \
 	./bootstrap.sh && \
 	./venv.sh && \
