@@ -53,5 +53,6 @@ for i in ${!HOST_*}; do
 	host="$(echo "$id" | sed -e s/__/-/g | sed -e s/_/./g)"
 
 	[ ! -e "$host/privkey.pem" ] && ln -s key.pem "$host/privkey.pem"
-	(cat "$host/chain.pem"; echo; cat "$host/cert.pem") > "$host/fullchain.pem"
+	(cat "$host/cert.pem"; echo; cat "$host/chain.pem") > "$host/fullchain.pem"
+	(cat "$host/chain.pem"; echo; cat "$host/cert.pem") > "$host/fullchain-reverse.pem"
 done
