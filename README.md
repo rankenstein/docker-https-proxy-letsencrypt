@@ -16,7 +16,7 @@ docker create \
 	-e "HOST_www_example_com=https://example.com/" -e "REDIRECT_www_example_com=permanent"
 	-e "HOST_example_org=/webapp1/|http://webapp1/|/webapp2/|http://webapp2/" \
 	-e "HOST_www_example_org=https://example.org/" -e "REDIRECT_www_example_org=permanent"
-	-v /srv/letsencrypt:/usr/local/apache2/ssl \
+	-v /srv/letsencrypt:/etc/apache2/ssl \
 	rankenstein/https-proxy-letsencrypt
 
 docker start -a https-proxy
@@ -37,4 +37,4 @@ Environment
 Volumes
 =======
 
-* `/usr/local/apache2/ssl`: The SSL certificate obtained from let’s encrypt will be put here. They should be persisted to avoid having to recreate them on container recreation, as let's encrypt currently [limits](https://community.letsencrypt.org/t/rate-limits-for-lets-encrypt/6769) certificate creation to 5 per domain per week.
+* `/etc/apache2/ssl/`: The SSL certificate obtained from let’s encrypt will be put here. They should be persisted to avoid having to recreate them on container recreation, as let's encrypt currently [limits](https://community.letsencrypt.org/t/rate-limits-for-lets-encrypt/6769) certificate creation to 5 per domain per week.
